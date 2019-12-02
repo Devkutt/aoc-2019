@@ -26,6 +26,8 @@ for (int i = 0; i <= 99; i++) {
     }
 }
 
+// ------------- HELPERS -------------
+
 class Instruction {
     final int OPCODE_ADD = 1
     final int OPCODE_MULTIPLY = 2
