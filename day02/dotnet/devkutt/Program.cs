@@ -10,14 +10,18 @@ namespace devkutt
 
         static void Main(string[] args)
         {
-            FileStream fileStream = new FileStream("input.txt", FileMode.Open);
-            int[] program;
+            int[] program = ReadProgram("input.txt");
+            CalculateNounAndVerb(program, TARGET_OUTPUT);
+        }
+
+        static int[] ReadProgram(string inputFile)
+        {
+            FileStream fileStream = new FileStream(inputFile, FileMode.Open);
             using (var reader = new StreamReader(fileStream))
             {
                 var line = reader.ReadLine();
-                program = line.Split(",").Select(x => int.Parse(x)).ToArray();
+                return line.Split(",").Select(x => int.Parse(x)).ToArray();
             }
-            CalculateNounAndVerb(program, TARGET_OUTPUT);
         }
 
         static void CalculateNounAndVerb(int[] program, int targetOutput)
@@ -26,10 +30,7 @@ namespace devkutt
             {
                 for (int verb = 0; verb < 100; verb++)
                 {
-                    program[1] = noun;
-                    program[2] = verb;
-                    var computedProgram = Compute(program);
-                    var output = computedProgram[0];
+                    var output = Compute(program, noun, verb);
                     if (output == targetOutput)
                     {
                         Console.WriteLine(100 * noun + verb);
@@ -39,35 +40,39 @@ namespace devkutt
             }
         }
 
-        static int[] Compute(int[] program)
+        static int Compute(int[] program, int noun, int verb)
         {
-            int currentPointer = 0;
+            int instructionPointer = 0;
             int[] computedProgram = new int[program.Length];
             program.CopyTo(computedProgram, 0);
+            computedProgram[1] = noun;
+            computedProgram[2] = verb;
 
             while (true)
             {
-                int opCode = computedProgram[currentPointer];
+                int opCode = computedProgram[instructionPointer];
                 if (opCode == 99)
                 {
-                    return computedProgram;
+                    return computedProgram[0];
                 }
-                int position1 = computedProgram[currentPointer + 1];
-                int position2 = computedProgram[currentPointer + 2];
-                int position3 = computedProgram[currentPointer + 3];
+                int parameterAddress1 = computedProgram[instructionPointer + 1];
+                int parameterAddress2 = computedProgram[instructionPointer + 2];
+                int parameterAddress3 = computedProgram[instructionPointer + 3];
+                int parameter1 = computedProgram[parameterAddress1];
+                int parameter2 = computedProgram[parameterAddress2];
 
                 switch (opCode)
                 {
                     case 1:
-                        computedProgram[position3] = computedProgram[position1] + computedProgram[position2];
+                        computedProgram[parameterAddress3] = parameter1 + parameter2;
                         break;
                     case 2:
-                        computedProgram[position3] = computedProgram[position1] * computedProgram[position2];
+                        computedProgram[parameterAddress3] = parameter1 * parameter2;
                         break;
                     default:
                         throw new Exception("Something went wrong");
                 }
-                currentPointer += 4;
+                instructionPointer += 4;
             }
         }
     }
